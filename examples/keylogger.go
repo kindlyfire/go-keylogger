@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	"gopkg.in/kindlyfire/go-keylogger"
+	"github.com/kindlyfire/go-keylogger"
 )
 
 const (
