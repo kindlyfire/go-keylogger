@@ -1,6 +1,8 @@
 
 # go-keylogger
 
+[![GoDoc](https://godoc.org/github.com/KindlyFire/go-keylogger?status.svg)](https://godoc.org/github.com/KindlyFire/go-keylogger)
+
 This is a small go keylogger library for Windows. It has the advantage over *all the other* keyloggers I found that it correctly parses each keypress, no matter the keyboard layout. No keymaps are hard-coded.
 
 See the `examples/` directory for examples.
